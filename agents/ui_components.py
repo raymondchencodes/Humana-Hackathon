@@ -167,6 +167,11 @@ def render_metrics_panel(structured_data):
     if "denied" in status.lower(): badge_type = "badge-denied"
     elif "approved" in status.lower() or "paid" in status.lower(): badge_type = "badge-approved"
 
+    denial_html = ""
+    denial_reason = structured_data.get('denial_reason')
+    if denial_reason and denial_reason.lower() not in ["null", "n/a", "none", "unknown"]:
+        denial_html = f'<p style="font-size: 0.9rem; color: #991B1B; margin: 0.5rem 0;"><strong>Denial Reason:</strong> {denial_reason}</p>'
+
     st.markdown(f"""
         <div class="healthcare-card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
@@ -176,6 +181,7 @@ def render_metrics_panel(structured_data):
             <h2 style="font-size: 1.25rem; margin-top: 0;">ID: {structured_data.get('claim_id', 'N/A')}</h2>
             <p style="font-size: 0.9rem; color: #64748B; margin: 0.25rem 0;">CPT: <strong>{", ".join(structured_data.get('cpt_codes', []))}</strong></p>
             <p style="font-size: 0.9rem; color: #64748B; margin: 0.25rem 0;">Confidence Score: <strong>{structured_data.get('confidence_score', 0) * 100:.0f}%</strong></p>
+            {denial_html}
             <hr>
             <div style="background-color: #EAF7EE; padding: 1rem; border-radius: 0.75rem; border: 1px solid #D1FAE5; text-align: center;">
                 <p style="font-size: 0.75rem; font-weight: 700; color: #059669; margin: 0 0 0.25rem 0; letter-spacing: 0.05em;">ESTIMATED RESOLUTION</p>
