@@ -1,8 +1,11 @@
 import os
+import json
 from google.adk.agents import Agent
 from google.adk.tools.bigquery import BigQueryToolset, BigQueryCredentialsConfig
 import google.auth
 from dotenv import load_dotenv, find_dotenv
+
+load_dotenv(find_dotenv())
 
 
 def parse_routing_result(response_text: str):
@@ -35,7 +38,7 @@ with open(prompt_path, "r") as f:
 # Define ADK agent
 root_agent = Agent(
     name="routing_agent",
-    model="gemini-3.5-flash",
+    model="gemini-1.5-flash",
     description="Routes user conversations to the correct downstream agent.",
     instruction=routing_instruction,
 )

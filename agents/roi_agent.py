@@ -2,7 +2,7 @@ from google.adk.agents import Agent
 
 roi_agent = Agent(
     name="ROIResolutionAgent",
-    model="gemini-2.5-flash",
+    model="gemini-1.5-flash",
     description="Handles ROI authorization outcomes and gathers information for handoff.",
     instruction="""
 You are a Release of Information (ROI) Assistant for a healthcare organization.

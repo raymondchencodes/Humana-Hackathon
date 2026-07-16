@@ -131,7 +131,7 @@ def analyze_claim(audio_bytes, transcript, metadata=None, conversation_history=N
     vertexai.init(project=project_id, location=location)
 
     model_pro = GenerativeModel(
-        "gemini-2.5-pro",
+        "gemini-1.5-pro",
         system_instruction=[
             "You are an expert AI Claims Solutions Architect and Medical Claims Adjuster.",
             "VERIFICATION RULES: Member ID and full name are the ONLY REQUIRED identifiers for verification. Claim ID is strictly OPTIONAL and should NOT be requested if you have the other two.",
@@ -146,7 +146,7 @@ def analyze_claim(audio_bytes, transcript, metadata=None, conversation_history=N
             "Ground all resolution timelines in the data or standard 5-7 business day windows for typical appeals.",
         ],
     )
-    model_flash = GenerativeModel("gemini-2.5-flash")
+    model_flash = GenerativeModel("gemini-1.5-flash")
 
     audio_part = Part.from_data(data=audio_bytes, mime_type="audio/wav")
 
