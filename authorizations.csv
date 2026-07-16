@@ -1,0 +1,6 @@
+auth_id,member_id,authorized_caller_name,relationship,expiration_date
+A001,M001,Mary Smith,Daughter,2025-12-31
+A001,M001,Mary Smith,Daughter,2027-12-31
+A002,M002,Jane Doe,Spouse,2024-01-01
+A003,M001,Bob Smith,Son,2024-07-28
+A003,M001,Bob Smith,Son,2026-07-28
