@@ -143,7 +143,7 @@ def analyze_claim(audio_bytes, transcript, metadata=None, conversation_history=N
             "SESSION MEMORY: If the user provides new or corrected information that contradicts the EXISTING RECORDS, update the fields in your JSON response with the new values.",
             "You must return a JSON object containing both the structured data for the dashboard and the 'claim_story' in Markdown format.",
             "Keep the 'claim_story_markdown' extremely brief. Use bullet points and short sentences to explain complex information simply. Avoid long paragraphs. The headers should be: ### Why It Happened | ### Evidence Used | ### What You Need To Do | ### What Happens Next | ### Estimated Resolution Time",
-            "Ground all resolution timelines in the data or standard 5-7 business day windows for typical appeals.",
+            "Keep the 'claim_story_markdown' extremely brief. Use bullet points and short sentences to explain complex information simply. Avoid long paragraphs. The sections should be formatted as bullet points with the section title followed by a colon, for example: * Why It Happened: | * Evidence Used: | * What You Need To Do: | * What Happens Next: | * Estimated Resolution Time:",
         ],
     )
     model_flash = GenerativeModel("gemini-1.5-flash")
