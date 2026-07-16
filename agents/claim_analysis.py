@@ -2,8 +2,7 @@ import os
 import argparse
 from google.cloud import speech
 from google.cloud import bigquery
-from vertexai.generative_models import GenerativeModel, Part
-from vertexai.generative_models import GenerationConfig
+from vertexai.generative_models import GenerativeModel, Part, GenerationConfig
 import json
 import vertexai
 
@@ -68,9 +67,10 @@ def get_claim_metadata(claim_id):
         FROM `{project}.{dataset_id}.claims` AS c
         LEFT JOIN `{project}.{dataset_id}.roi_authorizations` AS r 
             ON c.member_id = r.member_id
-        WHERE c.claim_id = @identifier 
-           OR c.member_id = @identifier 
-           OR LOWER(c.patient_name) = LOWER(@identifier)
+        WHERE TRIM(c.claim_id) = @identifier 
+           OR TRIM(c.member_id) = @identifier 
+           OR LOWER(TRIM(c.patient_name)) = LOWER(TRIM(@identifier))
+        ORDER BY c.service_date DESC
         LIMIT 1
     """
 
@@ -134,8 +134,8 @@ def analyze_claim(audio_bytes, transcript, metadata=None, conversation_history=N
         "gemini-2.5-pro",
         system_instruction=[
             "You are an expert AI Claims Solutions Architect and Medical Claims Adjuster.",
-            "VERIFICATION RULES: Member ID and full name are REQUIRED for verification. Claim ID is OPTIONAL.",
-            "Check EXISTING SYSTEM RECORDS and the FULL CONVERSATION before asking for anything. NEVER ask for information that already appears in either place.",
+            "VERIFICATION RULES: Member ID and full name are the ONLY REQUIRED identifiers for verification. Claim ID is strictly OPTIONAL and should NOT be requested if you have the other two.",
+            "Check EXISTING SYSTEM RECORDS and the FULL CONVERSATION before asking for anything. NEVER ask for information that already appears in either place. If you have Member ID and Name, proceed even if Claim ID is missing.",
             "If member_id or patient_name is genuinely missing from both the records and the conversation, politely ask ONLY for the missing item(s).",
             "In your JSON output, if you do not know a value, copy it from EXISTING SYSTEM RECORDS. Never output 'UNKNOWN' for a field that has a value in the records.",
             "Your goal is to explain healthcare insurance outcomes to members in simple, empathetic, and highly concise language.",
@@ -167,8 +167,10 @@ def analyze_claim(audio_bytes, transcript, metadata=None, conversation_history=N
         )
         # Skip re-querying if we already fetched the claim record this session
         if lookup_key and "status" not in metadata:
+            print(f"DEBUG: Attempting database lookup for identifier: {lookup_key}")
             fresh_metadata = get_claim_metadata(lookup_key)
             if fresh_metadata:
+                print(f"DEBUG: Found claim {fresh_metadata.get('claim_id')} for {lookup_key}")
                 safe_merge(metadata, fresh_metadata)
     except Exception:
         pass  # keep whatever metadata we already have — do NOT reset it
@@ -200,7 +202,7 @@ def analyze_claim(audio_bytes, transcript, metadata=None, conversation_history=N
             "cpt_codes": {"type": "ARRAY", "items": {"type": "STRING"}},
             "claim_story_markdown": {"type": "STRING"},
         },
-        "required": ["claim_id", "claim_status", "claim_story_markdown"],
+        "required": ["claim_status", "claim_story_markdown"],
     }
 
     prompt = f"""

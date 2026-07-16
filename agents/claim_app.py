@@ -44,10 +44,10 @@ with st.sidebar:
         <div class="nav-item">⚖️ Appeals Center</div>
         <div class="nav-item">💬 Support</div>
     """, unsafe_allow_html=True)
-
+    
     st.divider()
     project_id = st.text_input(
-        "Project Context",
+        "Project Context", 
         value=os.getenv("GOOGLE_CLOUD_PROJECT", ""),
     )
     if project_id:
@@ -55,7 +55,7 @@ with st.sidebar:
     else:
         st.warning("Please enter a GCP Project ID to begin.")
     st.divider()
-
+    
     st.caption(f"Session ID: `{st.session_state.session_id}`")
     if st.button("🆕 New Conversation", use_container_width=True, type="primary"):
         reset_consultation()
@@ -66,7 +66,7 @@ render_header()
 # Welcome banner
 render_hero_banner()
 
-# Define the layout
+# Define the 3-panel layout
 col_left, col_right = st.columns([2, 1])
 
 with col_left:
@@ -109,29 +109,24 @@ if audio_file is not None:
                     os.unlink(tmp_path)
 
             if not transcript:
-                transcript = "[No speech detected in transcript, performing audio-only analysis]"
-
+                 # For native multimodal, we need the bytes even if STT is empty
+                 transcript = "[No speech detected in transcript, performing audio-only analysis]"
+            
             if transcript not in st.session_state.chat_history:
                 st.session_state.chat_history.append(transcript)
 
-            # Pass session memory AND full conversation history to the analyzer
-            raw_analysis = analyze_claim(
-                audio_file.getvalue(),
-                transcript,
-                metadata=st.session_state.persistent_metadata,
-                conversation_history=st.session_state.chat_history[:-1],
-            )
+            # Pass cumulative metadata to ensure session-based memory
+            raw_analysis = analyze_claim(audio_file.getvalue(), transcript, metadata=st.session_state.persistent_metadata)
             structured_data, markdown_story = parse_gemini_response(raw_analysis)
 
-            # Only trust the model's output for IDENTIFIERS, and only real values.
+            # Update memory: Merge new extracted data into persistent metadata
+            # Only carry forward identifiers from the model's output, and only real values.
             # BigQuery facts (status, denial_code, etc.) already live in
             # persistent_metadata via analyze_claim's merge — never let model
             # output overwrite them with 'UNKNOWN' or empty strings.
-            safe_merge(
-                st.session_state.persistent_metadata,
-                {k: structured_data.get(k) for k in ("claim_id", "member_id", "patient_name")},
-            )
+            safe_merge(st.session_state.persistent_metadata, {k: structured_data.get(k) for k in ("claim_id", "member_id", "patient_name")})
             st.session_state.analysis_data = (structured_data, markdown_story)
+
 
         except Exception as e:
             st.error(f"An error occurred: {str(e)}")
@@ -150,7 +145,7 @@ if st.session_state.chat_history and st.session_state.analysis_data:
                 {markdown_story}
             </div>
         """, unsafe_allow_html=True)
-
+        
         if st.button("🎤 Speak again to provide more details", use_container_width=True):
             st.session_state.audio_input_key += 1
             st.rerun()

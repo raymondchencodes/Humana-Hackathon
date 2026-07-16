@@ -178,7 +178,7 @@ def render_metrics_panel(structured_data):
                 <span style="font-weight: 700; font-size: 0.85rem; color: #64748B;">CLAIM STATUS</span>
                 <span class="badge {badge_type}">{status}</span>
             </div>
-            <h2 style="font-size: 1.25rem; margin-top: 0;">ID: {structured_data.get('claim_id', 'N/A')}</h2>
+            <h2 style="font-size: 1.25rem; margin-top: 0;">ID: {structured_data.get('claim_id', structured_data.get('member_id', 'N/A'))}</h2>
             <p style="font-size: 0.9rem; color: #64748B; margin: 0.25rem 0;">CPT: <strong>{", ".join(structured_data.get('cpt_codes', []))}</strong></p>
             <p style="font-size: 0.9rem; color: #64748B; margin: 0.25rem 0;">Confidence Score: <strong>{structured_data.get('confidence_score', 0) * 100:.0f}%</strong></p>
             {denial_html}
